@@ -5,6 +5,7 @@ class Saham {
   int high;
   int last;
   double change;
+  int jumlah; // stock quantity
 
   Saham({
     this.tickerid,
@@ -13,6 +14,7 @@ class Saham {
     required this.high,
     required this.last,
     required this.change,
+    required this.jumlah,
   });
 
   factory Saham.fromMap(Map<String, dynamic> map) => Saham(
@@ -25,6 +27,7 @@ class Saham {
         (map['change'] is int)
             ? (map['change'] as int).toDouble()
             : (map['change'] as double),
+    jumlah: map['jumlah'] as int? ?? 0,
   );
 
   Map<String, dynamic> toMap() {
@@ -34,6 +37,7 @@ class Saham {
       'high': high,
       'last': last,
       'change': change,
+      'jumlah': jumlah,
     };
     if (tickerid != null) map['tickerid'] = tickerid;
     return map;

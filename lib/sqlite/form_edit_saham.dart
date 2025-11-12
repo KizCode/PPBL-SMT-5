@@ -1,25 +1,39 @@
 import 'package:flutter/material.dart';
 import 'connection.dart';
 import 'models/saham.dart';
-import 'read_saham.dart';
 
-class FormInputSaham extends StatefulWidget {
-  const FormInputSaham({super.key});
+class FormEditSaham extends StatefulWidget {
+  final Saham saham;
+  const FormEditSaham({super.key, required this.saham});
 
   @override
-  State<FormInputSaham> createState() => _FormInputSahamState();
+  State<FormEditSaham> createState() => _FormEditSahamState();
 }
 
-class _FormInputSahamState extends State<FormInputSaham> {
-  final DatabaseHandler databaseHandler = DatabaseHandler();
+class _FormEditSahamState extends State<FormEditSaham> {
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _tickerController;
+  late TextEditingController _openController;
+  late TextEditingController _highController;
+  late TextEditingController _lastController;
+  late TextEditingController _changeController;
+  late TextEditingController _jumlahController;
+  final DatabaseHandler db = DatabaseHandler();
 
-  final TextEditingController _tickerController = TextEditingController();
-  final TextEditingController _openController = TextEditingController();
-  final TextEditingController _highController = TextEditingController();
-  final TextEditingController _lastController = TextEditingController();
-  final TextEditingController _changeController = TextEditingController();
-  final TextEditingController _jumlahController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _tickerController = TextEditingController(text: widget.saham.ticker);
+    _openController = TextEditingController(text: widget.saham.open.toString());
+    _highController = TextEditingController(text: widget.saham.high.toString());
+    _lastController = TextEditingController(text: widget.saham.last.toString());
+    _changeController = TextEditingController(
+      text: widget.saham.change.toString(),
+    );
+    _jumlahController = TextEditingController(
+      text: widget.saham.jumlah.toString(),
+    );
+  }
 
   @override
   void dispose() {
@@ -34,33 +48,22 @@ class _FormInputSahamState extends State<FormInputSaham> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final ticker = _tickerController.text.trim();
-    final open = int.tryParse(_openController.text.trim()) ?? 0;
-    final high = int.tryParse(_highController.text.trim()) ?? 0;
-    final last = int.tryParse(_lastController.text.trim()) ?? 0;
-    final change = double.tryParse(_changeController.text.trim()) ?? 0.0;
-    final jumlah = int.tryParse(_jumlahController.text.trim()) ?? 0;
-
-    final s = Saham(
-      ticker: ticker,
-      open: open,
-      high: high,
-      last: last,
-      change: change,
-      jumlah: jumlah,
+    final updated = Saham(
+      tickerid: widget.saham.tickerid,
+      ticker: _tickerController.text.trim(),
+      open: int.tryParse(_openController.text.trim()) ?? 0,
+      high: int.tryParse(_highController.text.trim()) ?? 0,
+      last: int.tryParse(_lastController.text.trim()) ?? 0,
+      change: double.tryParse(_changeController.text.trim()) ?? 0.0,
+      jumlah: int.tryParse(_jumlahController.text.trim()) ?? 0,
     );
 
     try {
-      await databaseHandler.insertSaham(s);
+      await db.updateSaham(updated);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data saham berhasil disimpan')),
+        const SnackBar(content: Text('Data saham berhasil diubah')),
       );
-      _tickerController.clear();
-      _openController.clear();
-      _highController.clear();
-      _lastController.clear();
-      _changeController.clear();
-      _jumlahController.clear();
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -71,7 +74,7 @@ class _FormInputSahamState extends State<FormInputSaham> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Form Input Saham")),
+      appBar: AppBar(title: const Text('Edit Saham')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12.0),
         child: Form(
@@ -81,7 +84,7 @@ class _FormInputSahamState extends State<FormInputSaham> {
               TextFormField(
                 controller: _tickerController,
                 decoration: const InputDecoration(
-                  labelText: 'Ticker (kode saham)',
+                  labelText: 'Ticker',
                   border: OutlineInputBorder(),
                 ),
                 validator:
@@ -90,11 +93,11 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'Ticker wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _openController,
                 decoration: const InputDecoration(
-                  labelText: 'Open (harga pembukaan)',
+                  labelText: 'Open',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -104,11 +107,11 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'Open wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _highController,
                 decoration: const InputDecoration(
-                  labelText: 'High (harga tertinggi)',
+                  labelText: 'High',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -118,11 +121,11 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'High wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _lastController,
                 decoration: const InputDecoration(
-                  labelText: 'Last (harga terbaru)',
+                  labelText: 'Last',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -132,7 +135,7 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'Last wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _changeController,
                 decoration: const InputDecoration(
@@ -148,7 +151,7 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'Change wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _jumlahController,
                 decoration: const InputDecoration(
@@ -162,27 +165,8 @@ class _FormInputSahamState extends State<FormInputSaham> {
                             ? 'Jumlah wajib diisi'
                             : null,
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: _save,
-                    child: const Text('Simpan Saham'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ReadSaham(),
-                        ),
-                      );
-                    },
-                    child: const Text('Lihat Daftar Saham'),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 12),
+              ElevatedButton(onPressed: _save, child: const Text('Update')),
             ],
           ),
         ),
