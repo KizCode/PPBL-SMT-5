@@ -29,9 +29,7 @@ class _ReadSahamState extends State<ReadSaham> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar Saham'),
-      ),
+      appBar: AppBar(title: const Text('Daftar Saham')),
       body: RefreshIndicator(
         onRefresh: _reload,
         child: ListView.builder(
